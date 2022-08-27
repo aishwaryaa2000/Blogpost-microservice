@@ -1,0 +1,12 @@
+#docker compose is used to make containers from images
+
+version: '3'
+services:
+  myapache:
+  # This Compose file defines one service: myapache
+    build: .
+    # image is taken from docker-compose.yaml automatically
+    ports:
+      - 80:80
+      #host machine port : container port
+    
