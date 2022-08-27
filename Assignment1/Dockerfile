@@ -17,4 +17,3 @@ COPY ./mypage.html  /var/www/html/
 # FROM httpd:2.4 
 # COPY ./mypage.html  /usr/local/apache2/htdocs/
 # This copies the mypage.html from local to htdocs folder of the container which is build using httpd image
-# In this case,there is no need to explicitly start the apache server
