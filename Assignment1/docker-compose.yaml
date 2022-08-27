@@ -5,7 +5,7 @@ services:
   myapache:
   # This Compose file defines one service: myapache
     build: .
-    # image is taken from docker-compose.yaml automatically
+    # image is taken from dockerfile automatically
     ports:
       - 80:80
       #host machine port : container port
