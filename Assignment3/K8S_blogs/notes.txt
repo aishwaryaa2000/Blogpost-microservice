@@ -14,11 +14,15 @@ Across services, the endpoints should be unique to avoid ambiguity.
 
 Skaffold is used for automatic image building and deployments.
 
-
-
 Identify the endpoints and add in the ingress files.
 Make changes in the code.
 In blogcomment,blogpost,eventbus and query service
 put the links according to the service name so that
 deployments can talk to one another using the service ip/name.
 In frontend,modify the links by incorporating the base URL i.e myproj.com.
+
+
+Make changes in host inside C:\Windows\System32\drivers\etc
+Add ip and name
+
+
