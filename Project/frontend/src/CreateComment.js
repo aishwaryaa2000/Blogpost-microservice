@@ -4,10 +4,7 @@ export default ({postId})=>{
    const [message,updateMessage]= useState("Message for comment 1")
    const handleMySubmit= async(e) =>{
        e.preventDefault();
-    // await axios.post(`http://localhost:4002/api/v1/blog/post/${postId}/comment`,{message}).catch(e=>console.log(e.message))
-    // this entire frontend is being rendered on the client using ingress so directly specify the ingress url path
-    // bcoz it doesn't know what is comments-serv:4002 bcoz comment serv is unknown to external world
-        await axios.post(`http://localhost:4003/api/v1/blog/post/${postId}/comment`,{message}).catch(e=>console.log(e.message))
+        await axios.post(`http://localhost:4002/api/v1/blog/post/${postId}/comment`,{message}).catch(e=>console.log(e.message))
         updateMessage('')
    }
 

@@ -25,7 +25,8 @@ const cardofpost = Object.values(posts).map(p=>{
 
 </div>
 <div>
-    <DisplayComment comments={p.comments}/>
+    {/* <DisplayComment comments={p.comments}/> */}
+    <DisplayComment postId={p.id}/>
     <CreateComment postId={p.id}/>
 </div>
         </div>
@@ -35,7 +36,7 @@ const cardofpost = Object.values(posts).map(p=>{
     return(
    // <div><h1>Display</h1></div> //do this initially
     <div className="d-flex felx-row flex-wrap justify-content-between">
-{cardofpost}
+    {cardofpost}
     </div>
 
 

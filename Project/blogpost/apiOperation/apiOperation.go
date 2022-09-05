@@ -15,12 +15,6 @@ import (
 var posts =make(map[uuid.UUID]*Post) 
 
 
-// type Post struct{
-// 	PostId uuid.UUID `json:"id"`
-// 	Title string `json:"title"`
-// }
-
-
 type Post struct{
 	Type string `json:"type"`
 	Id uuid.UUID `json:"id"`
@@ -47,6 +41,7 @@ func CreatePost(w http.ResponseWriter,r *http.Request){
 	}
    var data Post
    json.Unmarshal(jsonData, &data)
+   fmt.Println("Data in blogpost is : ",data)
    data.Id,_=uuid.NewV4()
    data.Type="Post created"
    PostDataJson,_:=json.Marshal(data)

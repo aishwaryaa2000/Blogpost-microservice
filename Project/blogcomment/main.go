@@ -9,7 +9,7 @@ import (
 	// "net/http"
 	// "bytes"
 	// "os"
-	"blogpost/router"
+	"blogcomment/router"
 
 
 )
