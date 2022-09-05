@@ -87,16 +87,17 @@ func CreateComment(w http.ResponseWriter,r *http.Request){
 
 	fmt.Println("This is the response we recieved in blogcomment by event bus : ")
 	fmt.Println(getResponseFromEventBus.Comments)
+	// temp:=AllComments[getResponseFromEventBus.Id]
+	var temp []Comment
 	for key, element := range getResponseFromEventBus.Comments {
         fmt.Println("Key:", key, "=>", "Element:", element)
 		var singleComment Comment
 		singleComment.CommentId=key
 		singleComment.Message=element
-		temp:=AllComments[getResponseFromEventBus.Id]
 		temp=append(temp,singleComment)
-		AllComments[getResponseFromEventBus.Id]= temp
-		fmt.Println(AllComments)
     }
+	AllComments[getResponseFromEventBus.Id]= temp
+	fmt.Println(AllComments)
 	fmt.Println(reflect.TypeOf(getResponseFromEventBus.Comments))
 	// AllComments=getResponseFromEventBus.Comments	
  	//AllComments[getResponseFromEventBus.Id]=&getResponseFromEventBus
