@@ -2,7 +2,8 @@ package apioperation
 
 import (
 	"bytes"
-	"encoding/json"
+	// "encoding/json"
+	// "encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,9 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-
-var posts =make(map[uuid.UUID]*Post) 
-
+// var posts =make(map[uuid.UUID]*Post)
 
 // type Post struct{
 // 	PostId uuid.UUID `json:"id"`
@@ -24,8 +23,9 @@ var posts =make(map[uuid.UUID]*Post)
 
 type Post struct{
 	Type string `json:"type"`
-	PostId uuid.UUID `json:"id"`
+	Id uuid.UUID `json:"id"`
 	Title string `json:"title"`
+
 }
 
 func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
@@ -42,23 +42,27 @@ func PostEvent(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
-	jsonData, err := io.ReadAll(r.Body)
+	jsonData, _ := io.ReadAll(r.Body)
+	fmt.Println("while sending r body to query service : ",string(jsonData))
+
 	//requestData in json
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
    
 	//send the json object to the eventbus
-	resp, err := http.Post("https://localhost:4003/eventbus/event/listener", "application/json",
-		bytes.NewBuffer(jsonData))
+	fmt.Println("\nSending data from event bus to queryservice 4003 ",r.Body)
+	resp, err := http.Post("http://localhost:4003/eventbus/event/listener", "application/json",bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Fatal(err)
 	}
 	if resp.StatusCode==200{
-		fmt.Println(resp.Body)
+		jsonData, _ := io.ReadAll(resp.Body)
+
+		fmt.Println(string(jsonData))
 		//resp.body should have id and title
-		json.NewEncoder(w).Encode(resp.Body)
+		w.Write(jsonData)
 	}
 
 		

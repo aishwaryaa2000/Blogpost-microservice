@@ -23,7 +23,7 @@ var posts =make(map[uuid.UUID]*Post)
 
 type Post struct{
 	Type string `json:"type"`
-	PostId uuid.UUID `json:"id"`
+	Id uuid.UUID `json:"id"`
 	Title string `json:"title"`
 }
 
@@ -47,24 +47,28 @@ func CreatePost(w http.ResponseWriter,r *http.Request){
 	}
    var data Post
    json.Unmarshal(jsonData, &data)
-   data.PostId,_=uuid.NewV4()
+   data.Id,_=uuid.NewV4()
    data.Type="Post created"
    PostDataJson,_:=json.Marshal(data)
    
 	//send the json object to the eventbus
-	resp, err := http.Post("https://localhost:4005/eventbus/event", "application/json",
+	fmt.Println("\nSending data from blogpost to eventbus 4005")
+	resp, err := http.Post("http://localhost:4005/eventbus/event", "application/json",
 		bytes.NewBuffer(PostDataJson))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if resp.StatusCode==200{
 		// var res map[string]interface{}
 		//response body of event bus will give me id and title
 		var getResponseFromEventBus Post
 		responseFromEventBus, _ := io.ReadAll(resp.Body)
 		json.Unmarshal(responseFromEventBus,&getResponseFromEventBus)
+
+		fmt.Println("This is the response we recieved in blogpost by event bus : ")
 		fmt.Println(getResponseFromEventBus)
-		posts[getResponseFromEventBus.PostId]=&getResponseFromEventBus
+		posts[getResponseFromEventBus.Id]=&getResponseFromEventBus
 	}
 		
 }

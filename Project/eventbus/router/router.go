@@ -18,7 +18,7 @@ func MuxRoute(){
 
 	
 	fmt.Println("Sever started")
-	http.ListenAndServe(":4001",r)
+	http.ListenAndServe(":4005",r)
 
 	// return r;
 

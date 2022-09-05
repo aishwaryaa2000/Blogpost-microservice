@@ -3,10 +3,10 @@ package apioperation
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
-	 "bytes"
+	//  "bytes"
 	// "os"
 	"github.com/gofrs/uuid"
 
@@ -25,16 +25,15 @@ type PostResponseData struct{
 }
 
 // type Comment struct{
-// 	postId uuid.UUID `json:"postId"`
+// 	Id uuid.UUID `json:"Id"`
 // 	commentId uuid.UUID	`json:"commentId"`
 // 	msg string
-
 // }
 
 type PostRequestData struct{
-	postId uuid.UUID `json:"id"`
-	commentId uuid.UUID	`json:"id"`
-	msg string `json:"message"`
+	Id uuid.UUID `json:"id"`
+	CommentId uuid.UUID	`json:"commentId"`
+	Msg string `json:"message"`
 	Type string `json:"type"`
 	Title string `json:"title"`
 	// Comments map[uuid.UUID]string `json:"comments"`
@@ -54,8 +53,9 @@ func Post(w http.ResponseWriter,r *http.Request){
 	if(*r).Method=="OPTIONS"{
 		return
 	}
-	requestDataJson, err := ioutil.ReadAll(r.Body)
+	requestDataJson, err := io.ReadAll(r.Body)
 	//requestData in json
+	fmt.Println("In string : ",string(requestDataJson))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,26 +63,29 @@ func Post(w http.ResponseWriter,r *http.Request){
    	json.Unmarshal(requestDataJson,&requestPostData)
 	fmt.Println("Event recieved : ",requestPostData.Type)
 	//data has type id title of the post
+	fmt.Println("INSIDE QUERY : ",requestPostData)
 	singlePost:=handleEvent(&requestPostData)
+	fmt.Println(singlePost)
 	json.NewEncoder(w).Encode(singlePost)
 }
 
 func handleEvent(request *PostRequestData) PostResponseData{
-	if (request.Type == "Post Created"){
-		fmt.Println(request)
+	if (request.Type == "Post created"){
 		var newPost PostResponseData
 		var temp = make(map[uuid.UUID]string)
 		newPost.Comments=temp; //null map
-		newPost.Id=request.postId
+		newPost.Id=request.Id
 		newPost.Title=request.Title
-		posts[request.postId] = &newPost
-        return *posts[request.postId];
+		fmt.Println("\nThis is new post inside query : ",newPost)
+
+		posts[request.Id] = &newPost
+        return *posts[request.Id];
     }
-    //for comments we need the comment ID ,message and postID
+    //for comments we need the comment ID ,message and Id
     // if (request.Type == "Comment Created"){
 		fmt.Println(request)
-		posts[request.postId].Comments[request.commentId]=request.msg
-        return *posts[request.postId];
+		posts[request.Id].Comments[request.CommentId]=request.Msg
+        return *posts[request.Id];
     // }
 }
 
