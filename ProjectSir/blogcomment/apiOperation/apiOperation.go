@@ -72,8 +72,9 @@ func CreateComment(w http.ResponseWriter,r *http.Request){
    fmt.Println("\nSending data from blogcomment to eventbus 4005")
    resp, err := http.Post("http://localhost:4005/eventbus/event", "application/json", bytes.NewBuffer(PostDataJson))
    if err != nil {
-	   log.Fatal(err)
-   }
+
+		fmt.Println(err)
+	}
 	 
    if resp.StatusCode==200{
 		jsonresponse, _ := io.ReadAll(resp.Body)

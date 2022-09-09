@@ -21,8 +21,7 @@ import (
 // 	Title string `json:"title"`
 // }
 
-//var queue[] Event
-
+var queue =make([]Event, 0)
 
 type Event struct{
 	Id uuid.UUID `json:"id"`
@@ -56,13 +55,18 @@ func PostEvent(w http.ResponseWriter,r *http.Request){
 
 	//send the json object to the eventbus
 	fmt.Println("\nSending event from event bus to queryservice 4003 ",r.Body)
+	//bytes.NewBuffer(jsonDataRbody) to r.body
 	resp, err := http.Post("http://localhost:4003/eventbus/event/listener", "application/json",bytes.NewBuffer(jsonDataRbody))
 	if err != nil {
 		fmt.Println("Inside eb :",err)
 		//update in queue
-
+		var singleEvent Event
+		json.Unmarshal(jsonDataRbody,&singleEvent)
+		fmt.Println("pushing into queue : ",singleEvent)
+		queue = append(queue, singleEvent)
+		fmt.Println("Queue is : ",queue)
 	}
-	if resp.Body!=nil && resp.StatusCode==200{
+	if resp!=nil && resp.StatusCode==200{
 		jsonData, _ := io.ReadAll(resp.Body)
 		fmt.Println("successfully posting event to qs.")
 		fmt.Println(string(jsonData))
@@ -89,7 +93,7 @@ func AfterProcessEventFromQS(w http.ResponseWriter,r *http.Request){
    	json.Unmarshal(jsonData,&SingleEventData)
 	if SingleEventData.Type=="Post created"{
 		resp, err := http.Post("http://localhost:4001/senteventafterprocess", "application/json",bytes.NewBuffer(jsonData))
-		if resp.Body!=nil{
+		if resp!=nil{
 			//if ok from bp then send ok to qs
 			//send 2nd ok response to QS
 			jsonDataRes, _ := io.ReadAll(resp.Body)
@@ -102,7 +106,7 @@ func AfterProcessEventFromQS(w http.ResponseWriter,r *http.Request){
 		}
 	}else{
 		resp, err := http.Post("http://localhost:4002/senteventafterprocess", "application/json",bytes.NewBuffer(jsonData))
-		if resp.Body!=nil{
+		if resp!=nil{
 			//if ok from bp then send ok to qs
 			//send 2nd ok response to QS
 			jsonDataRes, _ := io.ReadAll(resp.Body)
@@ -121,11 +125,18 @@ func AfterProcessEventFromQS(w http.ResponseWriter,r *http.Request){
 
 
 
+func GetEventQueue(w http.ResponseWriter,r *http.Request){
+	//	r.HandleFunc("/eventbus/event",apioperation.GetEvent).Methods("GET","OPTIONS")
+	setupCorsResponse(&w,r)
 
+	defer func(){
+		queue= nil
+		fmt.Println("Queue is after nil statemnt : ",queue)
 
-// func GetEvent(w http.ResponseWriter,r *http.Request){
-// 	//	r.HandleFunc("/eventbus/event",apioperation.GetEvent).Methods("GET","OPTIONS")
-// 	setupCorsResponse(&w,r)
-// 	fmt.Println("Inside the get event of eventbus")
-// 	json.NewEncoder(w).Encode(queue)
-// }
+	}()
+
+	fmt.Println("Inside the get event of eventbus.to send event queue to QS")
+	json.NewEncoder(w).Encode(queue)
+
+	
+}

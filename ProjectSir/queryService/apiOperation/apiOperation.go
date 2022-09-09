@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	// "log"
 	"net/http"
 	 "bytes"
 	// "os"
@@ -52,7 +52,7 @@ func Post(w http.ResponseWriter,r *http.Request){
 	//requestData in json
 	fmt.Println("In string : ",string(requestDataJson))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("error in conversion :" ,err)
 	}
 	var requestPostData PostRequestData
    	json.Unmarshal(requestDataJson,&requestPostData)
@@ -67,7 +67,7 @@ func Post(w http.ResponseWriter,r *http.Request){
 	fmt.Println("\n\nAfter successfully updating QS db\nSending event from query service to eventbus after processing : ",r.Body)
 	resp, err := http.Post("http://localhost:4005/eventbus/getevent", "application/json",bytes.NewBuffer(requestDataJson))
 
-	if resp.Body!=nil{
+	if resp!=nil{
 		responseJson, _ := io.ReadAll(resp.Body)
 		fmt.Println("This is the response of post method sent from QS to EB : ",string(responseJson))
 	}
@@ -98,18 +98,62 @@ func handleEvent(request *PostRequestData) PostResponseData{
     }
     //for comments we need the comment ID ,message and Id
     // if (request.Type == "Comment Created"){
-		fmt.Println(request)
+		_,ok:=posts[request.Id]
+		fmt.Println("Key exists? : ",ok)
+	if (!ok){
+		var newPost PostResponseData
+		var temp = make(map[uuid.UUID]string)
+		newPost.Comments=temp; //null map
+		newPost.Id=request.Id
+		newPost.Title=request.Title
+		posts[request.Id] = &newPost
+		
+
+	}
 		posts[request.Id].Comments[request.CommentId]=request.Msg
-        return *posts[request.Id];
+      	return *posts[request.Id];
+		// posts[request.Id].Comments=make(map[uuid.UUID]string)
+		// posts[request.Id].Comments[request.CommentId]=request.Msg
+
+
+	
     // }
 }
 
-func GetPost(w http.ResponseWriter,r *http.Request){
-	setupCorsResponse(&w,r)
-	fmt.Println("Helloo")
-	json.NewEncoder(w).Encode(posts)
 
+
+func ProcessEvent(e PostRequestData){
+
+	singlePost:=handleEvent(&e)
+	fmt.Println(singlePost)
+	requestDataJson,_:=json.Marshal(e)
+	//once event is successfully processed then give a post req to eventbus
+
+	fmt.Println("\n\nAfter successfully updating QS db\nSending event from query service to eventbus after processing : ",string(requestDataJson))
+	resp, err := http.Post("http://localhost:4005/eventbus/getevent", "application/json",bytes.NewBuffer(requestDataJson))
+
+	if resp!=nil{
+		responseJson, _ := io.ReadAll(resp.Body)
+		fmt.Println("This is the response of post method sent from QS to EB : ",string(responseJson))
+	}
+	if resp.StatusCode==200{
+		fmt.Println("Inside qs.once we have successfully posted the event from qs to eb again after processing : ")
+		//sending positive response from qs to eb for previous posting of event from eb to qs
+		//Qs got Ok from EB so send FINAL OK Response to EB 
+		//w.Write([]byte("This is a positive response from QS to EB from earlier post of event.Final OK"))
+		//json.NewEncoder(w).Encode("This is a positive response from QS to EB from earlier post of event")
+	}
+	if err!=nil{
+		fmt.Println("\nError in QS is : ",err)
+	}
 }
+
+// func GetPost(w http.ResponseWriter,r *http.Request){
+// 	setupCorsResponse(&w,r)
+// 	fmt.Println("Helloo")
+// 	json.NewEncoder(w).Encode(posts)
+
+// }
 
 
 

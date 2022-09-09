@@ -1,4 +1,4 @@
-module blogpost
+module queryservice
 
 go 1.18
 
