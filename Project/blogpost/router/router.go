@@ -12,7 +12,7 @@ func CreateRoute() http.Handler{
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/blog/post",apioperation.CreatePost).Methods("POST","OPTIONS")
 	router.HandleFunc("/api/v1/blog/post",apioperation.GetPost).Methods("GET","OPTIONS") 
-	router.HandleFunc("/senteventafterprocess",apioperation.FinalEvent).Methods("POST","OPTIONS") 
+	router.HandleFunc("/processedevent",apioperation.UpdateAllPostsData).Methods("POST","OPTIONS") 
 
 	return router;
 

@@ -5,7 +5,8 @@ export default () => {
     const [title,updateTitle] = useState("My First Post") 
    const onSubmitHandler = async (e) => {
       e.preventDefault();
-      await axios.post("http://localhost:4001/api/v1/blog/post",{
+      //await axios.post("http://localhost:4001/api/v1/blog/post",{
+      await axios.post("http://myproj.com/api/v1/blog/post",{
            title
        }).catch(e=>console.log(e.message))
 

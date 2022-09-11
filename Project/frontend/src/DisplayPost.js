@@ -6,7 +6,9 @@ import DisplayComment from "./DisplayComment";
 export default () => {
  const [posts,updatePosts] = useState({}) // creating a hook for updates
 const loadPost = async ()=>{
-   const resp = await axios.get("http://localhost:4001/api/v1/blog/post").catch(e=>console.log(e.message))
+   //const resp = await axios.get("http://localhost:4001/api/v1/blog/post").catch(e=>console.log(e.message))
+   const resp = await axios.get("http://myproj.com/api/v1/blog/post").catch(e=>console.log(e.message))
+
 updatePosts(resp.data)
 console.log(resp.data)
 }

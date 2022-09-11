@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-serv
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex:  'true'
+spec:
+  rules:
+  - host: myproj.com
+    http:
+      paths:
+      # search for endpoints inside the code and write paths
+      - path: "/api/v1/blog/post"
+        pathType: Prefix
+        # means myproj.com should be prefix
+        backend:
+          service:
+            name: posts-serv
+            port: 
+              number: 4001
+      - path: "/api/v1/blog/post/?(.*)/comment"
+        pathType: Prefix
+        backend:
+          service:
+            name: comment-serv
+            port: 
+              number: 4002
+      - path: /?(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-serv
+            port: 
+              number: 3000    
+

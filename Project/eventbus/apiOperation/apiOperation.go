@@ -10,89 +10,99 @@ import (
 )
 
 var queue =make([]model.Event, 0)
+//This queue is used to store the events when query service goes down so that these events can be served later
 
 func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
+	//this is used to avoid cors error
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
 }
 
 func PostEvent(w http.ResponseWriter,r *http.Request){
-	
+	/*
+	This handle func is used to send the events recieved from blogpost/blogcomment to queryservice
+	*/
 	setupCorsResponse(&w,r)
 	if(*r).Method=="OPTIONS"{
 		return
 	}
 
-	jsonDataRbody, _ := io.ReadAll(r.Body)
+	jsonDataEvent, _ := io.ReadAll(r.Body)
+	fmt.Println("while sending r body to query service 4003 : ",string(jsonDataEvent))
 
-	fmt.Println("while sending r body to query service 4003 : ",string(jsonDataRbody))
-
-	resp, err := http.Post("http://localhost:4003/eventbus/event/listener", "application/json",bytes.NewBuffer(jsonDataRbody))
+	resp, err := http.Post("http://query-serv:4003/eventbus/event/listener", "application/json",bytes.NewBuffer(jsonDataEvent))
 	if err != nil {
+		//When queryService is down,then store the events into queue so that it can be served later when QS is up
 		fmt.Println("Inside EB :",err)
 		var singleEvent model.Event
-		json.Unmarshal(jsonDataRbody,&singleEvent)
+		json.Unmarshal(jsonDataEvent,&singleEvent)
 		queue = append(queue, singleEvent)
 	}
 	if resp!=nil && resp.StatusCode==200{
 		jsonData, _ := io.ReadAll(resp.Body)
-		fmt.Println("successfully posting event from EB to QS.")
-		fmt.Println(string(jsonData))
-		//final ok to bp that everything is done bhaii..one full event cycle is done
-		w.Write([]byte("OK from eb to bp or bc .After the whole event cycle is completed"))
+		fmt.Println("After successfully posting event from eventbus to QueryService.")
+		fmt.Println("Response in eventbus from queryService : ",string(jsonData))
+		w.Write([]byte("OK from eventbus to blogpost or blogcomment .After the whole event cycle is completed"))
 	}
 }
 
-func AfterProcessEventFromQS(w http.ResponseWriter,r *http.Request){
+func RedirectProcessedEvent(w http.ResponseWriter,r *http.Request){
+	/*This handle function is to redirect the processed event 
+	from queryService to blogpost or blogcomment according to the event type*/
 	setupCorsResponse(&w,r)
 	if(*r).Method=="OPTIONS"{
 		return
 	}
 	jsonData, _ := io.ReadAll(r.Body)
-	
-	fmt.Println("\nGetting event in request body of EB \nSent event from QS to EB after updating QS db: ",string(jsonData))
-    fmt.Println("Now send event back to blogpost again from EB")
+	fmt.Println("\nGetting event in request body of EventBus \nThis is the event sent from QS to EB after updating QS db: ",string(jsonData))
 
 	var SingleEvent model.Event
    	json.Unmarshal(jsonData,&SingleEvent)
+
+	//redirecting event acc to event type
 	if SingleEvent.Type=="Post created"{
-		resp, err := http.Post("http://localhost:4001/senteventafterprocess", "application/json",bytes.NewBuffer(jsonData))
+		resp, err := http.Post("http://posts-serv:4001/processedevent", "application/json",bytes.NewBuffer(jsonData))
 		if resp!=nil{
 			jsonDataRes, _ := io.ReadAll(resp.Body)
-			fmt.Println("LETS SEE : ",string(jsonDataRes))
-			w.Write([]byte("Successfully got event from QS to EB"))
+			fmt.Println("Response after sending processed event from EB to BP : ",string(jsonDataRes))
+			w.Write([]byte("Successfully got processed event from QS to EB"))
 		}
 		if err!=nil{
-			fmt.Println("inside eb error : ",err)
+			fmt.Println("Inside eb error from BP : ",err)
 		}
 	}else{
-		resp, err := http.Post("http://localhost:4002/senteventafterprocess", "application/json",bytes.NewBuffer(jsonData))
+		//if type of the event is comment created
+		resp, err := http.Post("http://comment-serv:4002/processedevent", "application/json",bytes.NewBuffer(jsonData))
 		if resp!=nil{
 			jsonDataRes, _ := io.ReadAll(resp.Body)
-			fmt.Println("LETS SEE : ",string(jsonDataRes))
-			w.Write([]byte("Successfully got event from QS to EB"))
+			fmt.Println("Response after sending processed event from EB to BC  : ",string(jsonDataRes))
+			w.Write([]byte("Successfully got processed event from QS to EB"))
 
 		}
 		if err!=nil{
-			fmt.Println("inside eb error : ",err)
+			fmt.Println("Inside eb error from BC : ",err)
 		}
 	}
-
 
 }
 
 
-func GetEventQueue(w http.ResponseWriter,r *http.Request){
+func SendEventQueue(w http.ResponseWriter,r *http.Request){
+	//This handle func is used to send the queue to QS
+
 	setupCorsResponse(&w,r)
 
+	/*After giving the queue to the QS in the response body
+	  empty the queue as the events of the queue will be 
+	  processed by the QS
+	*/
 	defer func(){
 		queue= nil
 		fmt.Println("Queue is after nil statemnt : ",queue)
 
 	}()
-
-	fmt.Println("Inside the get event of eventbus.Send event queue to QS")
+	
 	json.NewEncoder(w).Encode(queue)
 	
 }

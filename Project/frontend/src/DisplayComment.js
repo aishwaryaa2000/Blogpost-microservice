@@ -7,7 +7,8 @@ export default ({postId})=>{
     const [comments,updateComments] = useState([])
   
      const loadComments = async () =>{
-       const resp  = await axios.get(`http://localhost:4002/api/v1/blog/post/${postId}/comment`)
+      // const resp  = await axios.get(`http://localhost:4002/api/v1/blog/post/${postId}/comment`)
+       const resp  = await axios.get(`http://myproj.com/api/v1/blog/post/${postId}/comment`)
        updateComments(resp.data)
      }
     useEffect(()=>{

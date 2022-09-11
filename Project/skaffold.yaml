@@ -1,0 +1,70 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+build:
+  local:
+    push: false
+    #so that every time it rebuilds,it doesn't push to dockerhub
+    #so we are using a local image here
+  artifacts:
+  # what do i want to build
+    - image: aishwaryaa/posts
+      context: blogpost 
+      #where is the image-folder
+      docker:
+        dockerfile: Dockerfile
+      sync:
+      # what should be the trigger to build the image
+        manual:
+          - dest: .
+            src: "*.go"
+            #whenever there is a change in gp file then build an image
+            # any change is container file and go files
+    - image: aishwaryaa/comments
+      context: blogcomment 
+      #where is the image-folder
+      docker:
+        dockerfile: Dockerfile
+      sync:
+      # what should be the trigger to build the image
+        manual:
+          - dest: .
+            src: "*.go"
+            # any change is container file and go files
+    - image: aishwaryaa/eventbus
+      context: eventbus 
+      #where is the image-folder
+      docker:
+        dockerfile: Dockerfile
+      sync:
+      # what should be the trigger to build the image
+        manual:
+          - dest: .
+            src: "*.go"
+            # any change is container file and go files
+    - image: aishwaryaa/query
+      context: QueryService 
+      #where is the image-folder
+      docker:
+        dockerfile: Dockerfile
+      sync:
+      # what should be the trigger to build the image
+        manual:
+          - dest: .
+            src: "*.go"
+            # any change is container file and go files
+    - image: aishwaryaa/frontend
+      context: frontend 
+      #where is the image-folder
+      docker:
+        dockerfile: Dockerfile
+      sync:
+      # what should be the trigger to build the image
+        manual:
+          - dest: .
+            src: "*.js"
+            # any change is container and js file
+deploy:
+  kubectl:
+    manifests:
+      - ./infra/k8s/* 
+      # where are my deployment files

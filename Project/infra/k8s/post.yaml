@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts
+  labels:
+    app:  posts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  posts
+  template:
+    metadata:
+      labels:
+        app:  posts
+    spec:
+      containers:
+      - name: posts
+        image: aishwaryaa/posts
+  
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  posts-serv
+spec:
+  selector:
+    app:  posts
+  # type:  LoadBalancer | ClusterIP | NodePort
+  ports:
+  - protocol:  TCP
+    port:  4001
+    targetPort:  4001
