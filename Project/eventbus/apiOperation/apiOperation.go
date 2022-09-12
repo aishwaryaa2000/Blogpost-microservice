@@ -62,31 +62,41 @@ func RedirectProcessedEvent(w http.ResponseWriter,r *http.Request){
 
 	//redirecting event acc to event type
 	if SingleEvent.Type=="Post created"{
-		resp, err := http.Post("http://posts-serv:4001/processedevent", "application/json",bytes.NewBuffer(jsonData))
-		if resp!=nil{
-			jsonDataRes, _ := io.ReadAll(resp.Body)
-			fmt.Println("Response after sending processed event from EB to BP : ",string(jsonDataRes))
-			w.Write([]byte("Successfully got processed event from QS to EB"))
-		}
-		if err!=nil{
-			fmt.Println("Inside eb error from BP : ",err)
+		urlPost := "http://posts-serv:4001/processedevent"
+		successfullySent := sendEvent(urlPost,jsonData)
+		if successfullySent{
+			w.Write([]byte("Successfully got processed event from QS to EB and sent to BP"))
 		}
 	}else{
 		//if type of the event is comment created
-		resp, err := http.Post("http://comment-serv:4002/processedevent", "application/json",bytes.NewBuffer(jsonData))
-		if resp!=nil{
-			jsonDataRes, _ := io.ReadAll(resp.Body)
-			fmt.Println("Response after sending processed event from EB to BC  : ",string(jsonDataRes))
-			w.Write([]byte("Successfully got processed event from QS to EB"))
-
-		}
-		if err!=nil{
-			fmt.Println("Inside eb error from BC : ",err)
+		urlComment := "http://comment-serv:4002/processedevent"
+		successfullySent := sendEvent(urlComment,jsonData)
+		if successfullySent{
+			w.Write([]byte("Successfully got processed event from QS to EB and sent to BC"))
 		}
 	}
 
 }
 
+func sendEvent(url string,jsonData []byte) bool{
+
+	/*This func() is used to send the processed event either to 
+	blogpost or blogcomment depending on the url provided
+	which in turn depends on the event type 
+	*/
+	var okBool = false
+	resp, err := http.Post(url, "application/json",bytes.NewBuffer(jsonData))
+	if resp!=nil{
+		jsonDataRes, _ := io.ReadAll(resp.Body)
+		fmt.Println("Response after sending processed event from EB to BP/BC : ",string(jsonDataRes))
+		okBool=true
+	}
+	if err!=nil{
+		fmt.Println("Inside eb error from BP/BC : ",err)
+	}
+
+	return okBool
+}
 
 func SendEventQueue(w http.ResponseWriter,r *http.Request){
 	//This handle func is used to send the queue to QS
